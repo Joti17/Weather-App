@@ -37,4 +37,4 @@ Designed with responsiveness and user experience in mind, the app integrates asy
    git clone https://github.com/Joti17/weather-app.git
    cd weather-app
    pip install -r requirements.txt
-   python main.py
+   python main.py -YOUR_API_KEY
