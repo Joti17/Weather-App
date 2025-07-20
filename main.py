@@ -24,12 +24,12 @@ def get_api_key_from_args():
     """
     for arg in sys.argv[1:]:
         if arg.startswith('-') and len(arg) > 1:
-            return arg[1:]  # Remove the leading dash and return the rest as API key
-    print("Get an api Key here: https://www.weatherapi.com/")
+            return arg[1:]
     return None
 API_KEY = get_api_key_from_args()
 if not API_KEY:
     API_KEY = "KEY"
+    print("Get an api Key here: https://www.weatherapi.com/")
 URL = f"http://api.weatherapi.com/v1/current.json?key={API_KEY}&q=" #&q=location&api=yes
 
 screen = screeninfo.get_monitors()[1]
@@ -150,10 +150,11 @@ class Window(QWidget):
     def update_ui(self, data):
         icon_url = data["current"]["condition"]["icon"]
         temp_c = data["current"]["temp_c"]
-        update_icon(icon_url, self.ConditionLabel)
+        icon_path = update_icon(icon_url, self.ConditionLabel)
         self.ConditionText.setText(f"{temp_c} °C")
         self.update_ui_sizes()
-
+        if icon_path:
+            self.ConditionPixmap = QPixmap(icon_path)
 
     def update_ui_sizes(self):
         """Update fonts and pixmap sizes dynamically on window resize"""
@@ -210,7 +211,6 @@ request = requests.get(create_url("London"))
 request_json = request.json()
 
 def update_icon(condition_icon_url, label):
-    # condition_icon_url is something like: "//cdn.weatherapi.com/weather/64x64/day/113.png"
     full_icon_url = "https:" + condition_icon_url
 
     try:
@@ -223,6 +223,11 @@ def update_icon(condition_icon_url, label):
 
         pixmap = QPixmap(icon_path)
         label.setPixmap(pixmap.scaled(150, 150, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        return icon_path
+
+    except requests.RequestException as e:
+        print(f"Failed to download icon: {e}")
+        return None
 
 
     except requests.RequestException as e:
