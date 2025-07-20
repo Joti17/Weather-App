@@ -1,5 +1,3 @@
-from pkgutil import get_data
-
 import requests
 import sys
 import os
@@ -26,10 +24,10 @@ window_height = 500
 default_img = "https://cdn.weatherapi.com/weather/64x64/day/113.png"
 with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmp_file:
     response = requests.get(default_img)
-    response.raise_for_status()  # Ensure the request succeeded
+    response.raise_for_status()
     tmp_file.write(response.content)
     tmp_path = tmp_file.name
-    print(tmp_path)
+
 
 bgs = ["bg.jpg", "bg2.jpeg", "bg3.jpeg", "bg4.jpeg", "bg5.jpeg"]
 fontsize = 80
@@ -46,23 +44,20 @@ class Window(QWidget):
         self.setGeometry(x, y, window_width, window_height)
 
 
-        # Background pixmap (will paint in paintEvent)
         self.bg_pixmap = QPixmap(random.choice(bgs))
 
-        # Title label setup
+
         self.AppNameLabel = QLabel("Weather App")
         self.AppNameLabel.setAlignment(Qt.AlignCenter)
         self.AppNameLabel.setStyleSheet("color: black; font-weight: bold;")
         self.AppNameLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
-        # Weather icon label
         self.ConditionLabel = QLabel()
         self.ConditionLabel.setAlignment(Qt.AlignCenter)
         self.ConditionLabel.setScaledContents(True)
         self.ConditionPixmap = QPixmap(tmp_path)
         self.ConditionLabel.setPixmap(self.ConditionPixmap)
 
-        # Temperature text label
         self.ConditionText = QLabel()
         self.ConditionText.setAlignment(Qt.AlignCenter)
         self.ConditionText.setStyleSheet("color: white; font-weight: bold; background: transparent;")
@@ -104,21 +99,23 @@ class Window(QWidget):
                     }
                 """)
         self.submit_button.clicked.connect(self.on_submit_clicked)
-        # Layout configuration using QGridLayout
         layout = QGridLayout()
         layout.addWidget(self.AppNameLabel, 0, 0, 1, 1, alignment=Qt.AlignTop | Qt.AlignHCenter)
         layout.addWidget(self.InputCity, 1, 0, alignment=Qt.AlignTop | Qt.AlignHCenter)
         layout.addWidget(self.submit_button, 2, 0, alignment=Qt.AlignTop | Qt.AlignHCenter)
         layout.addWidget(self.ConditionLabel, 4, 0, alignment=Qt.AlignHCenter | Qt.AlignTop)
         layout.addWidget(self.ConditionText, 3, 0, alignment=Qt.AlignHCenter | Qt.AlignTop)
-        layout.setRowStretch(5, 1)  # Push everything upwards
+        layout.setRowStretch(5, 1)
 
         self.setLayout(layout)
 
-        # Initial font size and pixmap scaling
         self.base_fontsize = fontsize
         self.update_ui_sizes()
         self.data = self.get_data()
+        if self.data and "current" in self.data:
+            self.temp = self.data["current"]["temp_c"]
+        else:
+            self.temp = 30
 
     def on_submit_clicked(self):
         self.city = self.InputCity.text()
@@ -145,23 +142,19 @@ class Window(QWidget):
     def update_ui_sizes(self):
         """Update fonts and pixmap sizes dynamically on window resize"""
 
-        # Adjust AppNameLabel font size based on window width
         font_size = max(10, min(self.base_fontsize, int(self.width() * 0.1)))
         self.AppNameLabel.setFont(QFont("Arial", font_size))
 
-        # Adjust ConditionText font size (slightly smaller than title)
         temp_font_size = max(8, int(font_size * 0.75))
         self.ConditionText.setFont(QFont("Arial", temp_font_size))
 
-        # Resize weather icon pixmap relative to window size
-        icon_size = int(self.width() * 0.5)  # 50% of window width
+        icon_size = int(self.width() * 0.5)
         scaled_pixmap = self.ConditionPixmap.scaled(icon_size, icon_size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         self.ConditionLabel.setPixmap(scaled_pixmap)
         self.ConditionLabel.setFixedSize(scaled_pixmap.size())
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        # Scale and draw background pixmap
         scaled_bg = self.bg_pixmap.scaled(self.size(), Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
         painter.drawPixmap(0, 0, scaled_bg)
         super().paintEvent(event)
@@ -197,10 +190,8 @@ def check_url(request: requests.models.Response) -> int: #0 is ok, val>=1 is err
 
 
 
-print(create_url("London"))
 request = requests.get(create_url("London"))
 request_json = request.json()
-print(request_json["current"]["temp_c"])
 
 def update_icon(condition_icon_url, label):
     # condition_icon_url is something like: "//cdn.weatherapi.com/weather/64x64/day/113.png"
@@ -217,7 +208,6 @@ def update_icon(condition_icon_url, label):
         pixmap = QPixmap(icon_path)
         label.setPixmap(pixmap.scaled(150, 150, Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
-        # Optionally clean up old temp files here if you track them
 
     except requests.RequestException as e:
         print(f"Failed to download icon: {e}")
@@ -236,8 +226,6 @@ def main():
         while True:
             window.data = window.get_data()
 
-            # Process the returned data here (e.g., print or store it)
-            print(window.data)
             time.sleep(10)
     thread = threading.Thread(target=periodic_task, daemon=True)
     thread.start()
