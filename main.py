@@ -13,7 +13,10 @@ from PyQt5.QtCore import Qt
 import screeninfo
 import random
 global city, data, tmp_path, URL
-API_KEY = 'KEY'
+if len(sys.argv) > 1 and sys.argv[1].strip():
+    API_KEY = sys.argv[1].strip()
+else:
+    API_KEY = 'KEY'
 URL = f"http://api.weatherapi.com/v1/current.json?key={API_KEY}&q=" #&q=location&api=yes
 
 screen = screeninfo.get_monitors()[1]
