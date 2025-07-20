@@ -13,10 +13,21 @@ from PyQt5.QtCore import Qt
 import screeninfo
 import random
 global city, data, tmp_path, URL
-if len(sys.argv) > 1 and sys.argv[1].strip():
-    API_KEY = sys.argv[1].strip()
-else:
-    API_KEY = 'KEY'
+
+def get_api_key_from_args():
+    """
+    Parses command line arguments looking for a flag that starts with '-'.
+    If found, uses that flag (without the leading '-') as the API key.
+    Example:
+        python main.py -MY_API_KEY
+    Will extract 'MY_API_KEY' as the API key.
+    """
+    for arg in sys.argv[1:]:
+        if arg.startswith('-') and len(arg) > 1:
+            return arg[1:]  # Remove the leading dash and return the rest as API key
+    print("Get an api Key here: https://www.weatherapi.com/")
+    return None
+API_KEY = get_api_key_from_args()
 URL = f"http://api.weatherapi.com/v1/current.json?key={API_KEY}&q=" #&q=location&api=yes
 
 screen = screeninfo.get_monitors()[1]
