@@ -28,6 +28,8 @@ def get_api_key_from_args():
     print("Get an api Key here: https://www.weatherapi.com/")
     return None
 API_KEY = get_api_key_from_args()
+if not API_KEY:
+    API_KEY = "KEY"
 URL = f"http://api.weatherapi.com/v1/current.json?key={API_KEY}&q=" #&q=location&api=yes
 
 screen = screeninfo.get_monitors()[1]
