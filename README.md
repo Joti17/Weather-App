@@ -34,5 +34,6 @@ Designed with responsiveness and user experience in mind, the app integrates asy
 1. **Clone the repository**:
 
    ```bash
+   pip install -r requirements.txt
    git clone https://github.com/Joti17/weather-app.git
    cd weather-app
